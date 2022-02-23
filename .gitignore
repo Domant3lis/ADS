@@ -42,6 +42,9 @@
 *.idb
 *.pdb
 
+# Valgrind cores
+vgcore.*
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
