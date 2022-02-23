@@ -21,7 +21,7 @@ Vec2 getLine(Vec2 p1, Vec2 p2)
 }
 
 // Shows if three points are on a line
-// IMPORTANT: It is assumed that none of these vectors is a null vector
+// IMPORTANT: It is assumed that none of these points are the same 
 bool isLine(Vec2 p1, Vec2 p2, Vec2 p3)
 {
     Vec2 line1 = getLine(p1, p2);
@@ -50,7 +50,7 @@ bool isLine(Vec2 p1, Vec2 p2, Vec2 p3)
 void printPoint2(Vec2 p)
     { printf("P: %lf  %lf\n", p.x, p.y);}
 
-// return dot product of two vectors
+// returns dot product of two vectors
 double vecDotProduct(Vec2 p1, Vec2 p2)
 {
     return (p1.x * p2.x) + (p1.y * p2.y);
