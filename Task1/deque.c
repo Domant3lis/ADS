@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include "deque.h"
 
-// #pragma poison printf
-#include <stdio.h> 
+#pragma GCC poison printf
+#pragma GCC poison puts
 struct Node
 {
 	void *value;
@@ -175,16 +175,11 @@ void Deque_destroy(Deque *deq)
 	Node *temp = deq->front;
 	while(temp != NULL)
 	{
-		printf("temp: %p  temp_val: %d\n", (void *) temp, *((int *)temp->value));
 		free(temp->value);
 
 		Node *fre = temp;
 		temp = temp->prev;
 		free(fre);
-
-		// printf("temp: %p  temp_val: %d\n", temp, *((int *)temp->value));
-		// puts("");
-
 	}
 
 	deq->size = 0;
@@ -192,12 +187,16 @@ void Deque_destroy(Deque *deq)
 	deq->rear = NULL;
 }
 
-void Deque_print(Deque *deq)
+bool Deque_full(void)
 {
-	Node *ptr = deq->front;
-	while(ptr)
+	Node *new = Node_init(NULL);
+	if (new == NULL)
 	{
-		printf("VAL: %d\n", *((int *) ptr->value));
-		ptr = ptr->prev;
+		return true;
+	}
+	else
+	{
+		free(new);
+		return false;
 	}
 }

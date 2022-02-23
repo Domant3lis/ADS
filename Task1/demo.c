@@ -61,7 +61,6 @@ int main()
 
 	mal(-1);
 	Deque_push_rear(&deq, (void *)MAL);
-	// printf("GET: %d\n", *((int *) Deque_get_rear(&deq)));
 	assert(*((int *)Deque_get_rear(&deq)) == -1);
 	assert(Deque_size(&deq) == 6);
 
@@ -76,6 +75,8 @@ int main()
 	mal(-5);
 	Deque_push_rear(&deq, (void *)MAL);
 	// printf("GET: %d\n", *((int *) Deque_get_rear(&deq)));
+
+	printf("FULL: %d\n", Deque_full());
 
 	temp = ((int *)Deque_get_rear(&deq));
 	assert(*temp == -5);

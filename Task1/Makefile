@@ -9,7 +9,7 @@ test:
 	clang $(CFLAGS_MEMSAN) demo.c deque.c -o demo
 	clang $(CFLAGS) -g demo.c deque.c -o demo
 	valgrind --tool=memcheck -s --leak-check=full ./demo
-	ADS_TASK1_LIMIT=set ulimit -v; ulimit -v 10000; ./demo; ulimit -v $ADS_TASK1_LIMIT
+	# ulimit -v 2640; ./demo
 
 release:
 	$(CC) demo.c deque.c -O3 -o demo

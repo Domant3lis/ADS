@@ -20,4 +20,4 @@ void *Deque_get_front(Deque *deq);
 void *Deque_get_rear(Deque *deq);
 void *Deque_pop_rear(Deque *deq);
 void Deque_destroy(Deque *deq);
-void Deque_print(Deque *deq);
+bool Deque_full(void);
