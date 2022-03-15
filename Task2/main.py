@@ -1,44 +1,100 @@
+# Task: Put N queens in a MxM triangle board
+# such as each queen cannot be insight of another queen
+# 
+# Original wording:
+# "Rasti N valdovių išdėstymą M trikampėje lentoje, kad jos viena kitos nekirstų."
+
 from array import array
 import sys
 import numpy as np
 
 # Matrixes are initialized with zeroes 
-# 1 means a queen is placed there
-# 2 means this place is seen by some queen
-
+# 1 indicates a placed queen
 def brute(m, n):
     board = np.zeros((m, m))
-    # board = np.array([[1, 0, 0, 0], [2, 3, 0, 0], [4, 5, 6, 0], [7, 8, 9, 10]])
+    queens = n
 
     triangle_foo = 1;
     for row in range(len(board)):
         # print(row)
         for column in range(triangle_foo):
-            board[row][column] = 1;
+            if check(board, row, column) and queens != 0:
+                board[row][column] = 1
+                queens -= 1
         triangle_foo += 1
     
-    return board
+    return board, queens
 
 # NOTE: no checks are done to see if `row` and `col`
 # are inside the dimensions of `board`
 def check(board, row, col):
     triangle_foo = 1;
-    for row in range(len(board)):
-        # print(row)
-        for column in range(triangle_foo):
-            no_op()
-        triangle_foo += 1
 
-    return 
+    # checks row
+    for col_c in range(row):
+        if board[row][col_c] != 0:
+            return False
+    
+    # checks column
+    for row_c in range(col, len(board)):
+        if board[row_c][col] != 0:
+            return False
 
-def no_op():
-    return 0;
+    row_c = row
+    col_c = col
+    # checks the diagonal upper of the queen
+    while row_c >= 0 and col_c >= 0:
+        if board[row_c][col_c] != 0:
+            return False        
 
-if len(sys.argv) > 2:
-    dim = int(sys.argv[1])  # M
-    queen_num = int(sys.argv[2])  # N
-    print("Dim: ", dim, " N:", queen_num)
+        row_c -= 1
+        col_c -= 1
+
+    row_c = row
+    col_c = col
+    # checks the diagonal lower than the queen
+    while row_c < len(board) and col_c < len(board):
+        if board[row_c][col_c] != 0:
+            return False
+
+        row_c += 1
+        col_c += 1
+
+    return True
+
+# Matrixes are initialized with zeroes
+# 1 indicates a placed queen
+def smart(m, n):
+    board = np.zeros((m, m))
+
+    row = 0
+    col = 0
+    
+    while row < len(board) and col < len(board) and col < n:
+        board[row][col] = 1
+        row += 2
+        col += 1
+
+    return board, col
+
+if len(sys.argv) == 3:
+    m = int(sys.argv[1])  # M
+    n = int(sys.argv[2])  # N
+    print("Dim: ", m, " N:", n)
 else:
-    exit
+    print("Missing arguments")
+    exit()
 
-print(brute(dim, queen_num))
+# board, queens = brute(m, n)
+# print(board)
+
+# if queens != n:
+#     print("Not possible to place this many queens")
+
+
+board, queens = smart(m, n)
+print(board)
+
+if queens != n:
+    print("Not possible to place this many queens")
+
