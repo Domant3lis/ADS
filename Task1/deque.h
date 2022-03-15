@@ -1,3 +1,4 @@
+// Domantas Keturakis ~ PS1 ~ Task1
 #pragma once
 #include <stdlib.h>
 #include <stdbool.h>
@@ -10,6 +11,7 @@ typedef struct Deque
     size_t size;
 } Deque;
 
+void Deque_print(Deque *deq);
 Deque Deque_init();
 bool Deque_empty();
 size_t Deque_size(Deque *deq);

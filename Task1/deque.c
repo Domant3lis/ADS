@@ -1,27 +1,17 @@
+// Domantas Keturakis ~ PS1 ~ Task1
 #include <stdlib.h>
+#include <stdio.h>
 #include "deque.h"
 
-#pragma GCC poison printf
+// #pragma GCC poison printf
 #pragma GCC poison puts
+
 struct Node
 {
 	void *value;
 	Node *next;
 	Node *prev;
 };
-
-// TODO:
-// ✓ init
-// ✓ empty?
-// ✓ size
-// - full?
-// ✓ push_back
-// ✓ push_front
-// ✓ pop_rear
-// ✓ pop_front
-// ✓ get_front
-// ✓ get_back
-// ✓ destroy
 
 // Initializes a Node on the heap
 Node *Node_init(void *val)
@@ -84,7 +74,10 @@ Node *Deque_push_front(Deque *deq, void *val)
 	}
 	return new;
 }
- 
+
+// Adds the value to the front of the Deque
+// Important: It is assumed that `val` is alloc'ed on the heap
+// And thus will be free()'d once Deque is destroyed
 Node *Deque_push_rear(Deque *deq, void *val)
 {
 	++(deq->size);
@@ -164,12 +157,16 @@ void *Deque_pop_rear(Deque *deq)
 	}
 }
 
+// Returns the first element from the Deque without removing it
 void *Deque_get_front(Deque *deq)
 	{ return deq->front->value; }
 
+// Returns the last element from the Deque without removing it
 void *Deque_get_rear(Deque *deq)
 	{ return deq->rear->value; }
 
+// Destroys the Deque `deq`
+// and free()'s all elements held inside
 void Deque_destroy(Deque *deq)
 {
 	Node *temp = deq->front;
@@ -187,6 +184,8 @@ void Deque_destroy(Deque *deq)
 	deq->rear = NULL;
 }
 
+// Checks if more memory can be allocated to
+// store another element in the Deque
 bool Deque_full(void)
 {
 	Node *new = Node_init(NULL);
@@ -199,4 +198,17 @@ bool Deque_full(void)
 		free(new);
 		return false;
 	}
+}
+
+void Deque_print(Deque *deq)
+{
+	Node *node = deq->front;
+	while (node != NULL)
+	{
+		printf("%d ", *((int *)node->value));
+
+		node = node->prev;
+	}
+
+	printf("\n");
 }
