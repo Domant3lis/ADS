@@ -1,0 +1,16 @@
+{
+    "cSpell.words": [
+        "hremove"
+    ],
+    "files.associations": {
+        "\"*.asm\"": "\"Assembly\"",
+        "*.tcc": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "functional": "c",
+        "memory": "c",
+        "string_view": "c",
+        "system_error": "c"
+    }
+}
