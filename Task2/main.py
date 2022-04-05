@@ -93,18 +93,22 @@ def place(boards, board, poz, left):
             board_copy = board.copy()
             board_copy[p] = 1
             
-            if left == 0:
+            #                                           this part: len(boards) == 0,
+            #                                           can be commented out
+            #                                           if one wishes to find all valid
+            #                                           boards
+            if left == 0 and check_board(board_copy, m) and len(boards) == 0:
                 boards.insert(len(boards), board_copy)
             elif left >= 1:
                 place(boards, board_copy, p, left - 1)
-                    
+    
     return boards
 
 # Matrixes are initialized with zeroes 
 # 1 indicates a placed queen
 # n is a number of queens
 # m - m x m matrix dimension
-def get_permutations(m, n):
+def get_valid(m, n):
     return place([], [0] * sum(range(0, m + 1)), -1, n - 1)
 
 
@@ -122,6 +126,7 @@ def print_board(board, m):
 
 
 if __name__ == '__main__':
+    # Command line option parsing
     if len(sys.argv) == 3:
         m = int(sys.argv[1])  # M
         n = int(sys.argv[2])  # N
@@ -129,12 +134,13 @@ if __name__ == '__main__':
     else:
         print("Missing arguments")
         exit()
-
-    print("VALID BOARDS: ")
-    boards = get_permutations(m, n)
-    for board in boards:
-        if check_board(board, m):
-            print("")
-            print(board)
+        
+    # The interesting part
+    boards = get_valid(m, n)
+    
+    # prints valid boards
+    if len(boards) > 0:
+        print("VALID BOARD FOUND: ")
+        for board in boards:
             print_board(board, m)
             
