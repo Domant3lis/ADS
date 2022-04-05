@@ -5,6 +5,7 @@
 # "Rasti N valdovių išdėstymą M trikampėje lentoje, kad jos viena kitos nekirstų."
 
 import sys
+import timeit
 
 def triangular_numbers(n):
     i, t = 1, 0
@@ -71,7 +72,7 @@ def check_board(board, m):
     
     return True
 
-def place_all(boards, board, poz, left):
+def place_all(boards, board, poz, left, m):
 
     # Switch the lines bellow for full list of valid boards
     # if left >= 0:
@@ -87,7 +88,7 @@ def place_all(boards, board, poz, left):
                 # Remove the line bellow for full list of valid boards
                 break
             else:
-                place_all(boards, board_copy, p, left - 1)
+                place_all(boards, board_copy, p, left - 1, m)
     
     return boards
 
@@ -96,7 +97,7 @@ def place_all(boards, board, poz, left):
 # n is a number of queens
 # m - m x m matrix dimension
 def bruteforce(m, n):
-    return place_all([], [0] * sum(range(0, m + 1)), -1, n - 1)
+    return place_all([], [0] * sum(range(0, m + 1)), -1, n - 1, m)
 
 # --- Backtracking methods
 
@@ -132,7 +133,7 @@ def check_cell(board, m, poz):
 
         possitions = list(map(lambda x: x + 1, possitions[1:]))
 
-    # # Checks diagonals
+    # Checks diagonals
     triangular_nums = list(triangular_numbers(m))
     for diag in range(0, m):
         
@@ -152,7 +153,7 @@ def check_cell(board, m, poz):
 
     return True
 
-def place_incrementally(boards, board, poz, left):
+def place_incrementally(boards, board, poz, left, m):
     
     # Switch the lines bellow for full list of valid boards
     # if left >= 0:
@@ -172,13 +173,12 @@ def place_incrementally(boards, board, poz, left):
                     break
             
                 else:
-                    # print("a")
-                    place_incrementally(boards, board_copy, p, left - 1)
+                    place_incrementally(boards, board_copy, p, left - 1, m)
 
     return boards
 
 def backtracking(m, n):
-    return place_incrementally([], [0] * sum(range(0, m + 1)), -1, n - 1)
+    return place_incrementally([], [0] * sum(range(0, m + 1)), -1, n - 1, m)
 
 if __name__ == '__main__':
     # Command line option parsing
@@ -199,6 +199,22 @@ if __name__ == '__main__':
         print("VALID BOARD FOUND: ")
         for board in boards:
             print_board(board, m)
+            
+    # benchmark
+    TRIES = 5
+    for ix in range(1, 8):
+        for jx in range(1, 8):            
+            brute_avg = timeit.Timer("bruteforce({}, {})"
+                .format(ix, jx), 'from __main__ import bruteforce')\
+                .timeit(number=TRIES) / TRIES
+                
+            back_avg = timeit.Timer("backtracking({}, {})"
+                .format(ix, jx), 'from __main__ import backtracking')\
+                .timeit(number=TRIES) / TRIES
+            
+            print("For m={} n={} on avg. it took {} for brute and {} for back"
+                .format(ix, jx, brute_avg, back_avg))
+            
     
     
             
