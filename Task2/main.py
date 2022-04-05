@@ -4,51 +4,85 @@
 # Original wording:
 # "Rasti N valdovių išdėstymą M trikampėje lentoje, kad jos viena kitos nekirstų."
 
-from cmath import pi
 import sys
-import numpy as np
-# from itertools import product
-import math
 
-# NOTE: no checks are done to see if `row` and `col`
-# are inside the dimensions of `board`
-def check(board, row, col):
-    triangle_foo = 1;
-
-    # checks row
-    for col_c in range(row):
-        if board[row][col_c] != 0:
-            return False
+def triangular_numbers(n):
+    i, t = 1, 0
+    while i <= n:
+        yield t
+        t += i
+        i += 1
     
-    # checks column
-    for row_c in range(col, len(board)):
-        if board[row_c][col] != 0:
+# Checks if a board is valid
+def check_board(board, m):
+    
+    # checks rows
+    # Works by counting 1s in a sublists
+    ix = 0
+    jx = 0
+    for row in range(0, m):
+        ix += row + 1
+        if board[jx:ix].count(1) > 1:
             return False
+        jx += row + 1
+    
+    # checks columns
+    
+    # builds a list of all possitions in that column
+    possitions = list(triangular_numbers(m))
+    for col in range(0, m):
+        count = 0
+        for pos in possitions:
+            if board[pos]:
+                count += 1
+            if count > 1:
+                return False
+        
+        possitions = list(map(lambda x: x + 1, possitions[1:]))
 
-    row_c = row
-    col_c = col
-    # checks the diagonal upper of the queen
-    while row_c >= 0 and col_c >= 0:
-        if board[row_c][col_c] != 0:
-            return False        
-
-        row_c -= 1
-        col_c -= 1
-
-    row_c = row
-    col_c = col
-    # checks the diagonal lower than the queen
-    while row_c < len(board) and col_c < len(board):
-        if board[row_c][col_c] != 0:
+    # Checks diagonals
+    possitions = list(triangular_numbers(m))
+    for diag in range(0, m):
+        
+        count = 0
+        for ix, pos in enumerate(possitions):
+            if board[ix + pos]:
+                count += 1
+            
+        if count > 1:
             return False
-
-        row_c += 1
-        col_c += 1
-
+        
+        possitions = possitions[1:]
+    
     return True
 
-def n_choose_k(n, k):
-    return math.factorial(n) / (math.factorial(k)*math.factorial(n-k))
+# Checks if a queen doesn't collide with other
+# True => is valid i.e. doesn't collide
+# False => is NOT valid i.e. does collide
+def check_cell(board, m, poz):
+    # cell_count = sum(range(0, m + 1))
+
+    # checks row
+    # ix = 0
+    # jx = 0
+    # for l in range(0, m):
+    #     ix += l + 1
+    #     print(board[jx:ix])
+    #     for ci, cell in enumerate(board[jx:ix]):
+    #         # print(type(cell))
+    #         if cell == 1 and ((ci + jx) != poz):
+    #             # print(board[jx:ix])
+    #             print(jx, ix, ci + jx, poz)
+    #             return False
+    #     jx += l + 1
+        
+        
+    # checks column
+    
+    # checks the diagonal upper of the queen
+    # checks the diagonal lower than the queen
+
+    return True
 
 # board is a list
 def place(boards, board, poz, left):
@@ -73,32 +107,34 @@ def place(boards, board, poz, left):
 def get_permutations(m, n):
     return place([], [0] * sum(range(0, m + 1)), -1, n - 1)
 
-# __main__:
-if len(sys.argv) == 3:
-    m = int(sys.argv[1])  # M
-    n = int(sys.argv[2])  # N
-    print("Dim: ", m, " N:", n)
-else:
-    print("Missing arguments")
-    exit()
-
 
 def print_board(board, m):
-    print("Board:")
     cell_count = sum(range(0, m + 1))
     if cell_count != len(board):
         raise Exception("This board is not a triangle", cell_count, len(board))
 
     ix = 0
     jx = 0
-    print(board)
     for l in range(0, m):
         ix += l + 1
         print(board[jx:ix])
         jx += l + 1
 
-    print("")
 
-boards = get_permutations(m, n)
-for board in boards:
-    print_board(board, m)
+if __name__ == '__main__':
+    if len(sys.argv) == 3:
+        m = int(sys.argv[1])  # M
+        n = int(sys.argv[2])  # N
+        print("Dim: ", m, " N:", n)
+    else:
+        print("Missing arguments")
+        exit()
+
+    print("VALID BOARDS: ")
+    boards = get_permutations(m, n)
+    for board in boards:
+        if check_board(board, m):
+            print("")
+            print(board)
+            print_board(board, m)
+            
