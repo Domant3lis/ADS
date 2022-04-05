@@ -4,26 +4,11 @@
 # Original wording:
 # "Rasti N valdovių išdėstymą M trikampėje lentoje, kad jos viena kitos nekirstų."
 
-from array import array
+from cmath import pi
 import sys
 import numpy as np
-
-# Matrixes are initialized with zeroes 
-# 1 indicates a placed queen
-def brute(m, n):
-    board = np.zeros((m, m))
-    queens = n
-
-    triangle_foo = 1;
-    for row in range(len(board)):
-        # print(row)
-        for column in range(triangle_foo):
-            if check(board, row, column) and queens != 0:
-                board[row][column] = 1
-                queens -= 1
-        triangle_foo += 1
-    
-    return board, queens
+# from itertools import product
+import math
 
 # NOTE: no checks are done to see if `row` and `col`
 # are inside the dimensions of `board`
@@ -62,21 +47,33 @@ def check(board, row, col):
 
     return True
 
-# Matrixes are initialized with zeroes
-# 1 indicates a placed queen
-def smart(m, n):
-    board = np.zeros((m, m))
+def n_choose_k(n, k):
+    return math.factorial(n) / (math.factorial(k)*math.factorial(n-k))
 
-    row = 0
-    col = 0
+# board is a list
+def place(boards, board, poz, left):
     
-    while row < len(board) and col < len(board) and col < n:
-        board[row][col] = 1
-        row += 2
-        col += 1
+    if left >= 0:
+        ran = range(poz + 1, len(board) - left)
+        for p in ran:
+            board_copy = board.copy()
+            board_copy[p] = 1
+            
+            if left == 0:
+                boards.insert(len(boards), board_copy)
+            elif left >= 1:
+                place(boards, board_copy, p, left - 1)
+                    
+    return boards
 
-    return board, col
+# Matrixes are initialized with zeroes 
+# 1 indicates a placed queen
+# n is a number of queens
+# m - m x m matrix dimension
+def get_permutations(m, n):
+    return place([], [0] * sum(range(0, m + 1)), -1, n - 1)
 
+# __main__:
 if len(sys.argv) == 3:
     m = int(sys.argv[1])  # M
     n = int(sys.argv[2])  # N
@@ -85,16 +82,23 @@ else:
     print("Missing arguments")
     exit()
 
-# board, queens = brute(m, n)
-# print(board)
 
-# if queens != n:
-#     print("Not possible to place this many queens")
+def print_board(board, m):
+    print("Board:")
+    cell_count = sum(range(0, m + 1))
+    if cell_count != len(board):
+        raise Exception("This board is not a triangle", cell_count, len(board))
 
+    ix = 0
+    jx = 0
+    print(board)
+    for l in range(0, m):
+        ix += l + 1
+        print(board[jx:ix])
+        jx += l + 1
 
-board, queens = smart(m, n)
-print(board)
+    print("")
 
-if queens != n:
-    print("Not possible to place this many queens")
-
+boards = get_permutations(m, n)
+for board in boards:
+    print_board(board, m)
