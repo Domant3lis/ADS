@@ -2,7 +2,7 @@
 # such as each queen cannot be insight of another queen
 # 
 # Original wording:
-# "Rasti N valdovių išdėstymą M trikampėje lentoje, kad jos viena kitos nekirstų."
+# "13. Rasti N valdovių išdėstymą M trikampėje lentoje, kad jos viena kitos nekirstų."
 
 import sys
 import timeit
@@ -164,7 +164,6 @@ def place_incrementally(boards, board, poz, left, m):
             
             if check_cell(board_copy, m, p):
                 board_copy[p] = 1
-                # print_board(board_copy, m)
                 
                 if left == 0:
                     boards.append(board_copy)
@@ -192,29 +191,86 @@ if __name__ == '__main__':
         
     # The interesting part
     # boards = bruteforce(m, n)
-    boards = backtracking(m, n)
-    
+    boards = []
+    TRIES = 3
+    for im in range(4, 11):
+        
+        # print_board( backtracking(im, int(im/2)), im)
+        
+        avg = timeit.Timer("backtracking({}, {})"
+            .format(im, int(im/2)), 'from __main__ import backtracking')\
+            .timeit(number=TRIES) / TRIES
+        
+        print("For m={} n={} on avg. it took {}"
+            .format(im, int(im/2), avg))
+        
+        
     # prints valid boards
-    if len(boards) > 0:
-        print("VALID BOARD FOUND: ")
-        for board in boards:
-            print_board(board, m)
+    # if len(boards) > 0:
+    #     print("VALID BOARD FOUND: ")
+    #     for board in boards:
+    #         print_board(board, m)
             
     # benchmark
-    TRIES = 5
-    for ix in range(1, 8):
-        for jx in range(1, 8):            
-            brute_avg = timeit.Timer("bruteforce({}, {})"
-                .format(ix, jx), 'from __main__ import bruteforce')\
-                .timeit(number=TRIES) / TRIES
-                
-            back_avg = timeit.Timer("backtracking({}, {})"
-                .format(ix, jx), 'from __main__ import backtracking')\
-                .timeit(number=TRIES) / TRIES
+    # import numpy as np
+    # from bokeh.plotting import figure, output_file, show
+    # from bokeh.layouts import row
+    # output_file("benchmark.html")
+
+    # TRIES = 3
+    # MAX_BRUTE = 8
+    # graph = []
+    # for ix in range(4, 11):
+
+    #     graph.append(figure(title="N={}".format(ix), x_axis_label='N', y_axis_label='Time'))
+
+    #     brute_time = []
+    #     back_time = []
+    #     time_graph = []
+
+    #     for jx in range(1, ix):
+    #         brute_avg = timeit.Timer("bruteforce({}, {})"
+    #             .format(ix, jx), 'from __main__ import bruteforce')\
+    #             .timeit(number=TRIES) / TRIES
+    #         brute_time.append(brute_avg)
+
+    #         back_avg = timeit.Timer("backtracking({}, {})"
+    #             .format(ix, jx), 'from __main__ import backtracking')\
+    #             .timeit(number=TRIES) / TRIES
+    #         back_time.append(back_avg)
+    #         time_graph.append(jx)
             
-            print("For m={} n={} on avg. it took {} for brute and {} for back"
-                .format(ix, jx, brute_avg, back_avg))
+    #         print("For m={} n={} on avg. it took {} for brute and {} for back"
+    #             .format(ix, jx, brute_avg, back_avg))
+    #         # print("For m={} n={} on avg. it took {} for back"
+    #         #     .format(ix, jx, back_avg))
             
+    #     graph[-1].line(time_graph, brute_time, color="red", legend_label="bruteforce")
+    #     graph[-1].line(time_graph, back_time, color="blue",legend_label="backtracking")
     
+    # MAX_BACK = 40
+    # for ix in range(MAX_BRUTE, MAX_BACK):
+    #     graph.append(figure(title="N={}".format(ix), x_axis_label='N', y_axis_label='Time'))
+
+    #     back_time = []
+    #     time_graph = []
+
+    #     for jx in range(1, ix):
+
+    #         back_avg = timeit.Timer("backtracking({}, {})"
+    #             .format(ix, jx), 'from __main__ import backtracking')\
+    #             .timeit(number=TRIES) / TRIES
+    #         back_time.append(back_avg)
+    #         time_graph.append(jx)
+            
+    #         print("For m={} n={} on avg. it took {} for back"
+    #             .format(ix, jx, back_avg))
+            
+    #     graph[-1].line(time_graph, back_time, color="blue",legend_label="backtracking")
+    
+    # show(row(graph))
+    
+    # import time
+    # time.sleep(1000000)
     
             
