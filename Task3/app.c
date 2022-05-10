@@ -7,13 +7,12 @@
 enum PRIORITIES
 {
     REGULAR_CLIENT = 0,
-    VIP_CLIENT = 100,
+    VIP_CLIENT = 1,
 };
 
 typedef struct {
     enum PRIORITIES priority;
-    unsigned int time_to_fix;
-    unsigned int time_left_to_fix; // time to fix a car in hours
+    unsigned int time_to_fix; // time to fix a car in hours
 } Client;
 
 typedef struct 
@@ -22,49 +21,66 @@ typedef struct
     unsigned int number_of_workers;
     unsigned int probability_of_vip_client;
     _Decimal32 hourly_pay;
-
 } State;
 
-
-// Returns the cost of operating
-// @arg sim_hours - number of hours to simulate operation of business
-_Decimal32 simulate(State state)
+void Client_print(Client cln)
 {
-    unsigned int ix = 0;
-    while (ix < state.sim_hours)
-    {
+    printf("PRIORITY: %s  TIME: %u\n", cln.priority ? "VIP" : "REGULAR", cln.time_to_fix);
+}
 
-        ++ix;
-    }
+short rand_vip(short probability_of_vip_client)
+{
+    return (probability_of_vip_client > (rand() % 100)) ? 1 : 0;
+}
 
-    return 0;
+short rand_to_fix(short num_of_workers)
+{
+    return 1 + (rand() % (5 * num_of_workers));
 }
 
 // Initializes the `Client` struct on the stack
-#define Client_init_stack(prio, to_fix, left) \
-{ \
-    .priority = prio, \
-    .time_to_fix = to_fix, \
-    .time_left_to_fix = left, \
-}
+#define Client_init_stack(vip_prob, num_of_workers) \
+    {                                              \
+        .priority = rand_vip(vip_prob),                   \
+        .time_to_fix = rand_to_fix(num_of_workers),       \
+    } \
 
-Client Client_init_heap(enum PRIORITIES prio, unsigned int to_fix, unsigned int left)
+Client Client_init_heap(short vip_prob, short num_of_workers)
 {
     Client *ret = malloc(sizeof(Client));
 
-    ret->priority = prio;
-    ret->time_to_fix = to_fix;
-    ret->time_left_to_fix = left;
+    ret->priority = rand_vip(vip_prob);
+    ret->time_to_fix = rand_to_fix(num_of_workers);
 
     return *ret;
 }
 
 void Client_free(Client *client) { free(client); client = NULL; }
 
+// Returns the cost of operating
+// @arg sim_hours - number of hours to simulate operation of business
+_Decimal32 simulate(State state)
+{
+    unsigned int ix = 0;
+    _Decimal32 expenses;
+    _Decimal32 revenue;
+    while (ix < state.sim_hours)
+    {
+        
+        ++ix;
+    }
+
+    return 0;
+}
+
 int main()
 {
-    Client a = Client_init_stack(0, 1, 1);
-    // Client b = Client_init_heap(0, 1, 1);
+    srand(time(NULL));
+    Client a = Client_init_stack(50, 10);
+    Client_print(a);
+    a = Client_init_heap(50, 5);
+    Client_print(a);
+
 
     PriorityQueue *pq = pq_create();
 
