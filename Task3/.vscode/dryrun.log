@@ -1,0 +1,6 @@
+make --dry-run --keep-going --print-directory
+make: Entering directory '/home/domantas/Projects/ADS/Task3'
+gcc -W -Wall -Wextra -Wpedantic -pedantic -std=c2x  pq/pq.c app.c -o app
+./app
+make: Leaving directory '/home/domantas/Projects/ADS/Task3'
+ 
