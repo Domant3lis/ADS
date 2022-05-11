@@ -168,8 +168,8 @@ void pq_destroy(PriorityQueue *queue)
 
 void* pq_retrieve(PriorityQueue* queue)
 {
-    if (!queue || !queue->head)
+    if ((queue == NULL) || (queue->head == NULL))
         return NULL;
 
-    return queue->head;
+    return queue->head->data;
 }

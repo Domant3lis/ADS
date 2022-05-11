@@ -1,10 +1,10 @@
-CFLAGS = -W -Wall -Wextra -Wpedantic -pedantic -std=c2x
+CFLAGS = -W -Wall -Wextra -Wpedantic -pedantic -std=c11 -ggdb3
 GGCFLAGS =  -fanalyzer -Wanalyzer-too-complex
 
 run: build
 	./app
 
-debug: build
+memtest: build
 	valgrind --tool=memcheck -s --leak-check=full ./app
 
 build:
@@ -12,3 +12,4 @@ build:
 
 clean:
 	rm app
+	rm vgcore.*
