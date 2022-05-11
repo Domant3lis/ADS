@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "pq/pq.h"
 #include <assert.h>
+#include <stdbool.h>
 
 enum PRIORITIES
 {
@@ -20,13 +21,17 @@ typedef struct
 {
     unsigned int starting_jobs;
     unsigned int sim_hours;
-    unsigned short number_of_workers;
+    unsigned short prob_new_client;
+    unsigned int number_of_workers;
     unsigned short prob_vip;
     unsigned int A;
     unsigned int A1;
     // B := A - A1
     _Decimal32 hourly_pay;
 } State;
+
+void State_print(State st)
+    { printf("START_JOBS: %u  SIM_HOURS: %u  PROB OF NEW CLIENT: %u  NO. WORKERS: %u  PROB VIP: %u  A: %u  A1: %u\n", st.starting_jobs, st.sim_hours, st.prob_new_client, st.number_of_workers, st.prob_vip, st.A, st.A1); }
 
 void Client_print(Client cln)
 {
@@ -41,6 +46,11 @@ short rand_vip(short prob_vip)
 short rand_to_fix(short num_of_workers)
 {
     return 1 + (rand() % (5 * num_of_workers));
+}
+
+bool rand_new_client(short prob_new_client)
+{
+    return ((rand() % 100) > prob_new_client) ? true : false;
 }
 
 // Initializes the `Client` struct on the stack
@@ -76,6 +86,8 @@ _Decimal32 simulate(State state)
 {
     assert(state.A >= state.A1);
 
+    State_print(state);
+
     [[maybe_unused]] _Decimal32 expenses = 0;
     [[maybe_unused]] _Decimal32 revenue = 0;
 
@@ -91,16 +103,46 @@ _Decimal32 simulate(State state)
     Client current = *((Client *) pq_remove(work_queue));
     while (ix < state.sim_hours)
     {
+        unsigned int needed_workers = (current.time_to_fix >= state.number_of_workers) ? state.number_of_workers : current.time_to_fix;
+
         if (current.priority == VIP_CLIENT)
         {
+            while(current.time_to_fix > 0)
+            {
+                current.time_to_fix -= needed_workers;
 
+                if(hour > 8)
+                {
+                    expenses += state.hourly_pay * 2 * needed_workers;
+                }
+                else
+                {
+                    expenses += state.hourly_pay * needed_workers;
+                }
+
+                needed_workers = (current.time_to_fix >= state.number_of_workers) ? state.number_of_workers : current.time_to_fix;
+                ++hour;
+                ++ix;
+            }
+
+            revenue += state.A1;
         }
         else
         {
+            current.time_to_fix -= needed_workers;
 
+            expenses += state.hourly_pay * needed_workers;
+
+            needed_workers = (current.time_to_fix >= state.number_of_workers) ? state.number_of_workers : current.time_to_fix;
         }
 
-        ++hour;
+        if (rand_new_client(state.prob_new_client))
+        {
+            Client client = Client_init_stack(state.prob_vip, state.number_of_workers);
+            pq_insert(work_queue, &client, client.priority);
+        }
+
+        hour = (hour >= 8) ? 0 : hour + 1;
         ++ix;
     }
 
@@ -120,7 +162,7 @@ int main()
     // unsigned int A1;
     // // B := A - A1
     // _Decimal32 hourly_pay;
-    printf("TOTAL: %lf", (double) simulate((State) { 1, 10, 2, 25, 100, 20, 700 }));
+    printf("TOTAL: %lf", (double) simulate((State) { 1, 10, 25, 2, 25, 100, 20, 20 }));
 
     // Client a = Client_init_stack(50, 10);
     // Client_print(a);
