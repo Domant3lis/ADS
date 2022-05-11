@@ -16,7 +16,7 @@ typedef struct PriorityQueue
 } PriorityQueue;
 
 // Allocate queue
-PriorityQueue* pq_create();
+PriorityQueue* pq_init();
 
 // Return true if queue is empty
 int pq_isEmpty(PriorityQueue* queue);
@@ -34,10 +34,10 @@ void pq_join(PriorityQueue* a, PriorityQueue* b);
 size_t pq_size(PriorityQueue* queue);
 
 // Free queue and nodes, and execute callback for each node if not NULL
-void pq_free(PriorityQueue* queue, void (*dataCallback)(void*, size_t));
+void pq_free(PriorityQueue* queue, void (*dataCallback)(void*));
 
 // Like pq_free, but doesn't free queue itself
-void pq_clear(PriorityQueue* queue, void (*dataCallback)(void*, size_t));
+void pq_clear(PriorityQueue* queue, void (*dataCallback)(void*));
 
 // Like pq_free, but doesn't free the elements themselves
 void pq_destroy(PriorityQueue *queue);

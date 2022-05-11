@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include "pq.h"
 
-PriorityQueue* pq_create()
+PriorityQueue* pq_init()
 {
-    PriorityQueue* queue = malloc(sizeof(PriorityQueue));
+    PriorityQueue *queue = malloc(sizeof(PriorityQueue));
     if (!queue) {
         return NULL;
     }
@@ -122,7 +122,7 @@ size_t pq_size(PriorityQueue* queue)
     return size;
 }
 
-void pq_free(PriorityQueue* queue, void (*dataCallback)(void*, size_t))
+void pq_free(PriorityQueue* queue, void (*dataCallback)(void*))
 {
     if (!queue)
         return;
@@ -133,7 +133,7 @@ void pq_free(PriorityQueue* queue, void (*dataCallback)(void*, size_t))
     return;
 }
 
-void pq_clear(PriorityQueue* queue, void (*dataCallback)(void*, size_t))
+void pq_clear(PriorityQueue* queue, void (*dataCallback)(void*))
 {
     if (!queue || !queue->head)
         return;
@@ -141,7 +141,7 @@ void pq_clear(PriorityQueue* queue, void (*dataCallback)(void*, size_t))
     for(Node* next = queue->head; next != NULL;)
     {
         if (dataCallback != NULL)
-            dataCallback(next->data, next->priority);
+            dataCallback(next->data);
 
         Node* prev = next;
         next = next->next;
