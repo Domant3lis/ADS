@@ -22,13 +22,14 @@ typedef struct
     unsigned int number_of_workers;
     unsigned short prob_vip;
     unsigned int A;
-    unsigned int A1;
-    // B := A - A1
+    unsigned int B;
+    // A1 := A - B
     long long hourly_pay;
+    long long hourly_pay_overtime;
 } State;
 
 void State_print(State st)
-    { printf("START_JOBS: %u  SIM_HOURS: %u  PROB OF NEW CLIENT: %u%%  NO. WORKERS: %u  PROB VIP: %u%%  A: %u  A1: %u\n", st.starting_jobs, st.sim_hours, st.prob_new_client, st.number_of_workers, st.prob_vip, st.A, st.A1); }
+    { printf("START_JOBS: %u  SIM_HOURS: %u  PROB OF NEW CLIENT: %u%%  NO. WORKERS: %u  PROB VIP: %u%%  A: %u  B: %u\n", st.starting_jobs, st.sim_hours, st.prob_new_client, st.number_of_workers, st.prob_vip, st.A, st.B); }
 
 void Client_print(Client *client)
 {
@@ -74,7 +75,7 @@ void Client_free(void *client)
 // Returns the cost of operating
 long long simulate(State state, bool logs)
 {
-    assert(state.A >= state.A1);
+    assert(state.A >= state.B);
 
     long long expenses = 0;
     long long revenue = 0;
@@ -100,14 +101,10 @@ long long simulate(State state, bool logs)
     unsigned int hour = 0;
     while (ix < state.sim_hours)
     {
-        long long payrate = state.hourly_pay;
-
         if (logs)
         {
             puts("-- QUEUE --");
-            pq_iter(work_queue, el, {
-                Client_print(el);
-            });
+            pq_iter(work_queue, el, { Client_print(el); });
         }
 
         // Simulation of one hour
@@ -116,19 +113,25 @@ long long simulate(State state, bool logs)
             // Regular conditions
             if (hour <= 8)
             {
+                // Each employee
                 for (unsigned int jx = 0; jx < state.number_of_workers; ++jx)
                 {
+                    // Working on a car
                     if (CURRENT(work_queue)->time_to_fix > 0)
                         CURRENT(work_queue)->time_to_fix -= 1;
+                    // A car was fixed
                     else
                     {
                         while (CURRENT(work_queue) != NULL && CURRENT(work_queue)->time_to_fix <= 0)
+                        {
+                            revenue += state.A;
                             REMOVE(work_queue);
+                        }
                         
                         if (CURRENT(work_queue) == NULL)
                         {
                             // Idle pay
-                            expenses += (state.number_of_workers - jx) * payrate; 
+                            expenses += state.hourly_pay; 
                             break;
                         }
                         
@@ -136,7 +139,7 @@ long long simulate(State state, bool logs)
                     }
 
                     assert(CURRENT(work_queue)->time_to_fix >= 0);
-                    expenses += payrate;
+                    expenses += state.hourly_pay_overtime;
                 }
             }
             // Incase a VIP client appears
@@ -161,21 +164,23 @@ long long simulate(State state, bool logs)
                         if (CURRENT(work_queue)->priority != VIP_CLIENT)
                             break;
 
+                        // else work for a VIP client continues
                         CURRENT(work_queue)->time_to_fix -= 1;
-                        revenue += state.A1;
+                        revenue += state.A;
                     }
 
                     assert(CURRENT(work_queue)->time_to_fix >= 0);
-                    expenses += payrate * 2;
+                    expenses += state.hourly_pay_overtime;
                 }
 
+                ++hour;
                 ++ix;
             }
         }
         else // if (CURRENT(work_queue) == NULL)
         {
             // Idle pay
-            expenses += payrate * state.number_of_workers;
+            expenses += state.hourly_pay * state.number_of_workers;
         }
 
         // Generates new clients
@@ -197,6 +202,7 @@ long long simulate(State state, bool logs)
 int main()
 {
     const int TRIES = 5;
+    long long sum = 0;
 
     srand(time(NULL));
 
@@ -207,79 +213,66 @@ int main()
         .number_of_workers = 2,
         .prob_vip = 0,
         .A = 100,
-        .A1 = 20,
+        .B = 80,
         .hourly_pay = 20,
         .no_new_client = 5,
     };
     State_print(s);
     for (int ix = 0; ix < TRIES; ++ix)
-        printf("TOTAL: %lld\n", simulate(s, false));
+    {
+        long long temp = simulate(s, false);
+        sum += temp;
+        printf("TOTAL: %lld\n", temp);
+    }
+    printf("AVERAGE: %lld\n", sum / TRIES);
     puts("------");
 
-    s = (State){
-        .starting_jobs = 5,
-        .sim_hours = 100,
-        .prob_new_client = 25,
-        .number_of_workers = 2,
-        .prob_vip = 25,
-        .A = 100,
-        .A1 = 20,
-        .hourly_pay = 20,
-        .no_new_client = 5,
-    };
+    sum = 0;
+    s.prob_vip = 25;
     State_print(s);
     for (int ix = 0; ix < TRIES; ++ix)
-        printf("TOTAL: %lld\n", simulate(s, false));
+    {
+        long long temp = simulate(s, false);
+        sum += temp;
+        printf("TOTAL: %lld\n", temp);
+    }
+    printf("AVERAGE: %lld\n", sum / TRIES);
     puts("------");
 
-    s = (State){
-        .starting_jobs = 5,
-        .sim_hours = 100,
-        .prob_new_client = 25,
-        .number_of_workers = 2,
-        .prob_vip = 50,
-        .A = 100,
-        .A1 = 20,
-        .hourly_pay = 20,
-        .no_new_client = 5,
-    };
-
+    sum = 0;
+    s.prob_vip = 50;
     State_print(s);
     for (int ix = 0; ix < TRIES; ++ix)
-        printf("TOTAL: %lld\n", simulate(s, false));
+    {
+        long long temp = simulate(s, false);
+        sum += temp;
+        printf("TOTAL: %lld\n", temp);
+    }
+    printf("AVERAGE: %lld\n", sum / TRIES);
     puts("------");
 
-    s = (State){
-        .starting_jobs = 5,
-        .sim_hours = 100,
-        .prob_new_client = 25,
-        .number_of_workers = 2,
-        .prob_vip = 75,
-        .A = 100,
-        .A1 = 20,
-        .hourly_pay = 20,
-        .no_new_client = 5,
-    };
+    sum = 0;
+    s.prob_vip = 75;
     State_print(s);
     for (int ix = 0; ix < TRIES; ++ix)
-        printf("TOTAL: %lld\n", simulate(s, false));
+    {
+        long long temp = simulate(s, false);
+        sum += temp;
+        printf("TOTAL: %lld\n", temp);
+    }
+    printf("AVERAGE: %lld\n", sum / TRIES);
     puts("------");
 
-    s = (State){
-        .starting_jobs = 5,
-        .sim_hours = 100,
-        .prob_new_client = 25,
-        .number_of_workers = 2,
-        .prob_vip = 100,
-        .A = 100,
-        .A1 = 20,
-        .hourly_pay = 20,
-        .no_new_client = 5,
-    };
+    sum = 0;
+    s.prob_vip = 100;
     State_print(s);
     for (int ix = 0; ix < TRIES; ++ix)
-        printf("TOTAL: %lld\n", simulate(s, false));
-    puts("------");
+    {
+        long long temp = simulate(s, false);
+        sum += temp;
+        printf("TOTAL: %lld\n", temp);
+    }
+    printf("AVERAGE: %lld\n", sum / TRIES);
 
     return 0;
 }
