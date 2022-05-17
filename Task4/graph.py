@@ -1,3 +1,5 @@
+from multiprocessing import connection
+from tabnanny import check
 from typing import List, Optional, Any, Dict, Tuple, Set
 import re, itertools
 
@@ -84,16 +86,24 @@ class Graph:
 				
 		return self
 
-	def check(self, from_node : Any, to_node : Any) -> bool:
+	def check_node(self, node : Any) -> bool:
+		if self.connections.get(node) == None:
+			return False
+		else:
+			return True
+
+	def check_path(self, from_node : Any, to_node : Any) -> bool:
+		if not self.check_node(from_node):
+			return False
+		
 		for con in self.connections[from_node]:
 			if con[0] == to_node:
 				return True
 		return False
 
-
 og = Graph()
 og.parse(open('test1.txt', 'r').read(), False)
 print(og)
-print(og.check('A', 'F'))
+# print(og.check_path('I', 'J'))
 
 # read('')
