@@ -1,40 +1,43 @@
 from multiprocessing import connection
+from sre_constants import ANY
 from tabnanny import check
-from typing import List, Optional, Any, Dict, Tuple, Set
+from time import sleep
+from typing import List, Optional, Any, Dict, Tuple, Set, OrderedDict
 import re, itertools
+from collections import OrderedDict
 
 # This graph implementation is non-oriented
 class Graph:
 	def __init__(self : 'Graph') -> None:
-		self.connections : Dict[Any, Dict[Any, int]] = dict()
-		self.n : int = 0
+		self.vertices : Dict[Any, Dict[Any, int]] = dict()
+		self.vert_count : int = 0
 
-	def add_con(self : 'Graph', from_node : Any, to_node : Any, weight: int, both_ways : bool = False) -> None:
-		# Vertex doesn't exist => update the number of them
-		if self.connections.get(from_node) is None or self.connections.get(to_node) is None:
-			self.n += 1
-		elif self.connections[from_node].get(to_node) is None and self.connections[to_node].get(from_node) is None:
-			self.n += 1
+	def add_edge(self : 'Graph', from_vertex : Any, to_vertex : Any, weight: int, both_ways : bool = False) -> None:
+		# Edge doesn't exist => update the number of them
+		if self.vertices.get(from_vertex) is None or self.vertices.get(to_vertex) is None:
+			self.vert_count += 1
+		elif self.vertices[from_vertex].get(to_vertex) is None and self.vertices[to_vertex].get(from_vertex) is None:
+			self.vert_count += 1
 		
-		# Node doesn't exist => initialize it
-		if self.connections.get(from_node) is None:
-			new = dict(); new[to_node] = weight
-			self.connections[from_node] = new
+		# Edge doesn't exist => initialize it
+		if self.vertices.get(from_vertex) is None:
+			new = dict(); new[to_vertex] = weight
+			self.vertices[from_vertex] = new
 		# Else update it
 		else:
-			self.connections[from_node][to_node] = weight
+			self.vertices[from_vertex][to_vertex] = weight
 
 		# Set vertex both ways
 		# ditto
 		if both_ways:
-			if self.connections.get(to_node) == None:
-				new = dict(); new[from_node] = weight
-				self.connections[to_node] = new
+			if self.vertices.get(to_vertex) == None:
+				new = dict(); new[from_vertex] = weight
+				self.vertices[to_vertex] = new
 			else:
-				self.connections[to_node][from_node] = weight
+				self.vertices[to_vertex][from_vertex] = weight
 
 	def __str__(self : 'Graph') -> str:
-		return str(self.connections) + "  No. of cons.: " + str(self.n)
+		return str(self.vertices) + "  No. of edges.: " + str(self.vert_count) + "  No. of vertices: " + str(self.get_edge_count())
 
 	def parse(self : 'Graph', input : str, log : bool = False) -> None:
 		for line in input.split("\n"):
@@ -48,74 +51,95 @@ class Graph:
 				to_ = re.split(' *, *', s)[0][1:]
 				weight = re.split(' *, *', s)[1][:-1]
 
-				self.add_con(from_, to_, int(weight), True)
+				# self.add_edge(from_, to_, int(weight), True)
+				self.add_edge(from_, to_, int(weight), False)
+
+	def copy(self : 'Graph') -> 'Graph':
+		copy = Graph()
+		copy.vertices = dict()
+		for from_node, verts in self.vertices.items():
+			copy.vertices[from_node] = dict()
+			for vert, weight in verts.items():
+				copy.vertices[from_node][vert] = weight
+
+		copy.vert_count = self.vert_count
+		return copy
+
+	def get_edges(self : 'Graph') -> List[Tuple[int, Any, Any]]:
+		edges : List[Tuple[int, Any, Any]] = list()
+		for from_ver, verts in self.vertices.items():
+			for to_ver, weight in verts.items():
+				
+				alread_included = False
+				for _, from_, to_ in edges:
+					if ((from_ == from_ver and to_ == to_ver) or (from_ == to_ver and to_ == from_ver)):
+						alread_included = True
+						break
+
+				if not alread_included:
+					edges.append((weight, from_ver, to_ver))
+		return edges
 	
-	def min(self) -> 'Graph':
+	def get_edge_count(self : 'Graph') -> int:
+		edges : Set = set()
+
+		for from_ver, verts in self.vertices.items():
+			edges.add(from_ver)
+			for to_ver, _ in verts.items():
+				edges.add(to_ver)
+
+		return len(edges)
+
+	def is_cyclical(self : 'Graph') -> bool:
+		visited_edges : List = list()
+
+		def __cycl(vert : Any):
+			if not self.vertices.get(vert) is None:
+				for vert in list(self.vertices[vert]):
+					visited_edges.append(vert)
+					__cycl(vert)
+
+		for vert in list(self.vertices):
+			visited_edges = []
+			visited_edges.append(vert)
+			__cycl(vert)
+
+			cond = False
+			# if visit has more than two of the same element return True
+			for visit in visited_edges:
+				if visited_edges.count(visit) > 1:
+					return True
+
+		return False
+
+	def min(self : 'Graph') -> 'Graph':
+		# sorts edges by their weight
+		edges = self.get_edges()
+		edges.sort(key=lambda x: x[0])
+		edges.reverse()
 
 		min_gr : 'Graph' = Graph()
 
-		# Iterates through each
-		for from_node, cons in self.connections.items():
-			# print(from_node, cons)
+		ix = 0
+		while ix < self.get_edge_count():
+
+			try:
+				edge = edges.pop()
+			except:
+				break
 			
-			cons_ = list(cons.items())
+			test = min_gr.copy()
+			test.add_edge(edge[1], edge[2], edge[0])
+			t = test.is_cyclical()
+			if not t:
+				min_gr.add_edge(edge[1], edge[2], edge[0])
 
-			min : Optional[Tuple[Any, int]] = None
-
-			# Searches for first valid vertex to compare to
-			ix = 0
-			while ix < len(cons_):
-				if not min_gr.check_path_any_dir(from_node, cons_[ix][0]):
-					min = cons_[ix]
-					break
-				# print(from_node, cons_[ix])
 				ix += 1
-
-			# If valid vertex is found then search for the 
-			if not min is None:
-				while ix < len(cons_):
-					if (min[1] > cons_[ix][1]) and (not min_gr.check_path_any_dir(from_node, cons_[ix][0])):
-						min = (cons_[ix][0], cons_[ix][1])
-					ix += 1
-
-				min_gr.add_con(from_node, min[0], min[1], True)
 		
 		return min_gr
 
-	def check_node(self, node : Any) -> bool:
-		if self.connections.get(node) is None:
-			return False
-		else:
-			return True
-
-	def check_path(self, from_node : Any, to_node : Any) -> bool:
-		print('----')
-		print(self.connections)
-		print(from_node, to_node)
-
-		cond : bool = False
-
-		if not self.check_node(from_node):
-			cond = False
-			# return False
-		
-		if cond:
-			for con in self.connections[from_node]:
-				print('I: ', con, to_node)
-				if con[0] == to_node:
-					cond = True
-					# return True
-		print(cond)
-		return cond
-
-	def check_path_any_dir(self : 'Graph', node0 : Any, node1 : Any) -> bool:
-		return self.check_path(node0, node1) or self.check_path(node1, node0)
-
 og = Graph()
-og.parse(open('test1.txt', 'r').read(), False)
+og.parse(open('test1_.txt', 'r').read(), False)
 print(og)
 print('MIN: ')
 print(og.min())
-# print(og.check_path('I', 'J'))
-
-# read('')
