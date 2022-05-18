@@ -29,12 +29,12 @@ class Graph:
 
 		# Set vertex both ways
 		# ditto
-		if both_ways:
-			if self.vertices.get(to_vertex) == None:
-				new = dict(); new[from_vertex] = weight
-				self.vertices[to_vertex] = new
-			else:
-				self.vertices[to_vertex][from_vertex] = weight
+		# if both_ways:
+		# 	if self.vertices.get(to_vertex) == None:
+		# 		new = dict(); new[from_vertex] = weight
+		# 		self.vertices[to_vertex] = new
+		# 	else:
+		# 		self.vertices[to_vertex][from_vertex] = weight
 
 	def __str__(self : 'Graph') -> str:
 		return str(self.vertices) + "  No. of edges.: " + str(self.vert_count) + "  No. of vertices: " + str(self.get_edge_count())
@@ -81,7 +81,7 @@ class Graph:
 		return edges
 	
 	def get_edge_count(self : 'Graph') -> int:
-		edges : Set = set()
+		edges : Set[Any] = set()
 
 		for from_ver, verts in self.vertices.items():
 			edges.add(from_ver)
@@ -91,9 +91,9 @@ class Graph:
 		return len(edges)
 
 	def is_cyclical(self : 'Graph') -> bool:
-		visited_edges : List = list()
+		visited_edges : List[Any] = list()
 
-		def __cycl(vert : Any):
+		def __cycl(vert : Any) -> None:
 			if not self.vertices.get(vert) is None:
 				for vert in list(self.vertices[vert]):
 					visited_edges.append(vert)
@@ -139,7 +139,26 @@ class Graph:
 		return min_gr
 
 og = Graph()
-og.parse(open('test1_.txt', 'r').read(), False)
+og.parse(open('test1.txt', 'r').read(), False)
 print(og)
 print('MIN: ')
-print(og.min())
+min = og.min()
+print(min)
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+viz = nx.Graph()
+viz_min = nx.Graph()
+
+for edge in og.get_edges():
+	viz.add_edge(edge[1], edge[2])
+
+nx.draw_networkx(viz)
+plt.show()
+
+for edge in min.get_edges():
+	viz_min.add_edge(edge[1], edge[2])
+
+nx.draw_networkx(viz_min)
+plt.show()
